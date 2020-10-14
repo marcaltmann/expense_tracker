@@ -59,21 +59,22 @@ module ExpenseTracker
 
     describe 'GET /expenses/:date' do
       context 'when expenses exist on the given date' do
+        let(:expenses) do
+          [
+            Expense.new('Starbucks', 5.75,  Date.parse('2017-06-10')),
+            Expense.new('Zoo',       15.25, Date.parse('2017-06-10'))
+          ]
+        end
+
         before do
           allow(ledger).to receive(:expenses_on)
           .with(Date.parse('2017-06-10'))
-          .and_return([
-            Expense.new('Starbucks', 5.75,  Date.parse('2017-06-10')),
-            Expense.new('Zoo',       15.25, Date.parse('2017-06-10'))
-          ])
+          .and_return(expenses)
         end
 
         it 'returns the expense records as JSON' do
           get '/expenses/2017-06-10'
-          expect(response_body).to eq([
-            { 'payee' => 'Starbucks', 'amount' => 5.75,  'date' => '2017-06-10' },
-            { 'payee' => 'Zoo',       'amount' => 15.25, 'date' => '2017-06-10' }
-          ])
+          expect(response_body).to eq(expenses.map(&:serialize))
         end
 
         it 'responds with a 200 (OK)' do
@@ -83,15 +84,17 @@ module ExpenseTracker
       end
 
       context 'when there are no expenses on the given date' do
+        let(:expenses) { [] }
+
         before do
           allow(ledger).to receive(:expenses_on)
           .with(Date.parse('2017-07-01'))
-          .and_return([])
+          .and_return(expenses)
         end
 
         it 'returns an empty array as JSON' do
           get '/expenses/2017-07-01'
-          expect(response_body).to eq([])
+          expect(response_body).to eq(expenses.map(&:serialize))
         end
 
         it 'responds with a 200 (OK)' do

@@ -25,7 +25,7 @@ module ExpenseTracker
     get '/expenses/:date' do
       date = Date.parse(params['date'])
       result = @ledger.expenses_on(date)
-      JSON.generate(result.map { |el| {'payee' => el.payee, 'amount' => el.amount, 'date' => el.date} })
+      JSON.generate(result.map { |el| el.serialize })
     end
   end
 end
